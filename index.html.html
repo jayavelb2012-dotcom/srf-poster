@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SRF DURATENS Poster Generator</title>
+<style>
+  :root {
+    --srf-blue: #003087;
+    --srf-orange: #FF6B00;
+    --srf-gold: #F5A623;
+    --bg: #F0F4F8;
+    --card: #FFFFFF;
+    --text: #1A1A2E;
+    --muted: #6B7280;
+    --border: #D1D5DB;
+    --success: #059669;
+    --fr750: #2563EB;
+    --fr900: #7C3AED;
+    --fr1100: #DC2626;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  header {
+    background: linear-gradient(135deg, var(--srf-blue) 0%, #001a5c 100%);
+    color: white; padding: 16px 20px; display: flex; align-items: center; gap: 14px;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+  .logo-badge {
+    background: var(--srf-orange); width: 48px; height: 48px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 13px; letter-spacing: -0.5px;
+    color: white; flex-shrink: 0; line-height: 1.1; text-align: center;
+  }
+  .header-text h1 { font-size: 17px; font-weight: 700; }
+  .header-text p { font-size: 11px; opacity: 0.75; margin-top: 2px; }
+  .container { padding: 16px; max-width: 600px; margin: 0 auto; }
+  .grade-selector { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .grade-btn { border: 2px solid var(--border); background: var(--card); border-radius: 12px; padding: 12px 8px; cursor: pointer; text-align: center; transition: all 0.2s; }
+  .grade-btn.active-750 { border-color: var(--fr750); background: #EFF6FF; }
+  .grade-btn.active-900 { border-color: var(--fr900); background: #F5F3FF; }
+  .grade-btn.active-1100 { border-color: var(--fr1100); background: #FEF2F2; }
+  .grade-btn .grade-label { font-size: 15px; font-weight: 800; display: block; }
+  .grade-btn .grade-sub { font-size: 10px; color: var(--muted); display: block; margin-top: 2px; }
+  .grade-btn .grade-badge { display: inline-block; margin-top: 6px; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 20px; color: white; }
+  .badge-750 { background: var(--fr750); }
+  .badge-900 { background: var(--fr900); }
+  .badge-1100 { background: var(--fr1100); }
+  .section-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; margin-top: 16px; }
+  .app-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .app-btn { border: 1.5px solid var(--border); background: var(--card); border-radius: 10px; padding: 10px 12px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 500; color: var(--text); transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+  .app-btn:hover { border-color: var(--srf-orange); background: #FFF7ED; }
+  .app-btn.selected { border-color: var(--srf-orange); background: #FFF7ED; font-weight: 700; }
+  .app-btn .app-icon { font-size: 18px; }
+  .theme-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .theme-chip { border: 1.5px solid var(--border); background: var(--card); border-radius: 20px; padding: 6px 14px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+  .theme-chip.selected { border-color: var(--srf-blue); background: var(--srf-blue); color: white; font-weight: 600; }
+  .gen-btn { width: 100%; background: linear-gradient(135deg, var(--srf-orange), #e55b00); color: white; border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800; cursor: pointer; letter-spacing: 0.3px; margin-top: 8px; box-shadow: 0 4px 15px rgba(255,107,0,0.4); transition: transform 0.1s; }
+  .gen-btn:active { transform: scale(0.98); }
+  .output-section { margin-top: 20px; }
+  .output-card { background: var(--card); border-radius: 14px; padding: 16px; margin-bottom: 14px; border: 1px solid var(--border); box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
+  .output-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .output-title { font-size: 13px; font-weight: 700; color: var(--srf-blue); text-transform: uppercase; letter-spacing: 0.5px; }
+  .copy-btn { background: var(--srf-blue); color: white; border: none; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+  .copy-btn.copied { background: var(--success); }
+  .output-text { font-size: 13px; line-height: 1.7; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+  .photo-warning { background: #FFFBEB; border: 1.5px solid var(--srf-gold); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; font-size: 13px; font-weight: 600; color: #92400E; display: flex; gap: 8px; align-items: flex-start; }
+  .spec-strip { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .spec-tag { font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 600; color: white; }
+  .tip-box { background: #F0F9FF; border-left: 4px solid #0284C7; padding: 10px 14px; border-radius: 0 10px 10px 0; font-size: 12px; color: #0369A1; margin-top: 10px; line-height: 1.6; }
+  footer { text-align: center; padding: 20px; font-size: 11px; color: var(--muted); margin-top: 10px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-badge">SRF<br>DRT</div>
+  <div class="header-text">
+    <h1>DURATENS Poster Generator</h1>
+    <p>ChatGPT Image Prompt + WhatsApp Caption</p>
+  </div>
+</header>
+<div class="container">
+  <div class="section-label">Step 1 — Select Grade</div>
+  <div class="grade-selector">
+    <div class="grade-btn" id="btn-750" onclick="selectGrade('750')">
+      <span class="grade-label" style="color:var(--fr750)">FR 750</span>
+      <span class="grade-sub">Type I</span>
+      <span class="grade-badge badge-750">10-yr</span>
+    </div>
+    <div class="grade-btn active-900" id="btn-900" onclick="selectGrade('900')">
+      <span class="grade-label" style="color:var(--fr900)">FR 900</span>
+      <span class="grade-sub">Type II ★</span>
+      <span class="grade-badge badge-900">15-yr</span>
+    </div>
+    <div class="grade-btn" id="btn-1100" onclick="selectGrade('1100')">
+      <span class="grade-label" style="color:var(--fr1100)">FR 1100</span>
+      <span class="grade-sub">Type III</span>
+      <span class="grade-badge badge-1100">15-yr</span>
+    </div>
+  </div>
+  <div class="section-label">Step 2 — Select Application</div>
+  <div class="app-grid">
+    <button class="app-btn selected" onclick="selectApp(this,'Car Park Canopy','🚗')"><span class="app-icon">🚗</span>Car Park Canopy</button>
+    <button class="app-btn" onclick="selectApp(this,'School Assembly Area','🏫')"><span class="app-icon">🏫</span>School Assembly</button>
+    <button class="app-btn" onclick="selectApp(this,'Resort Pool Shade','🏊')"><span class="app-icon">🏊</span>Resort Pool Shade</button>
+    <button class="app-btn" onclick="selectApp(this,'Hospital Drop-off','🏥')"><span class="app-icon">🏥</span>Hospital Drop-off</button>
+    <button class="app-btn" onclick="selectApp(this,'Villa Pergola','🏡')"><span class="app-icon">🏡</span>Villa Pergola</button>
+    <button class="app-btn" onclick="selectApp(this,'Commercial Mall Entry','🏬')"><span class="app-icon">🏬</span>Mall Entry</button>
+    <button class="app-btn" onclick="selectApp(this,'Walkway Canopy','🚶')"><span class="app-icon">🚶</span>Walkway Canopy</button>
+    <button class="app-btn" onclick="selectApp(this,'Stadium Grandstand','🏟️')"><span class="app-icon">🏟️</span>Stadium Stand</button>
+    <button class="app-btn" onclick="selectApp(this,'Airport Entry Canopy','✈️')"><span class="app-icon">✈️</span>Airport Entry</button>
+    <button class="app-btn" onclick="selectApp(this,'Industrial Shed Cover','🏭')"><span class="app-icon">🏭</span>Industrial Shed</button>
+    <button class="app-btn" onclick="selectApp(this,'Temple Mandap','🛕')"><span class="app-icon">🛕</span>Temple Mandap</button>
+    <button class="app-btn" onclick="selectApp(this,'Government Building Canopy','🏛️')"><span class="app-icon">🏛️</span>Govt Building</button>
+    <button class="app-btn" onclick="selectApp(this,'Apartment Rooftop Shade','🏢')"><span class="app-icon">🏢</span>Apartment Rooftop</button>
+    <button class="app-btn" onclick="selectApp(this,'Open Air Event Tensile','🎪')"><span class="app-icon">🎪</span>Event Tensile</button>
+    <button class="app-btn" onclick="selectApp(this,'Petrol Station Canopy','⛽')"><span class="app-icon">⛽</span>Petrol Station</button>
+  </div>
+  <div class="section-label">Step 3 — Visual Theme</div>
+  <div class="theme-row">
+    <div class="theme-chip selected" onclick="selectTheme(this,'Photorealistic Architecture')">📸 Photorealistic</div>
+    <div class="theme-chip" onclick="selectTheme(this,'3D Render Blue Sky')">🌤️ 3D Blue Sky</div>
+    <div class="theme-chip" onclick="selectTheme(this,'Night Lighting Drama')">🌙 Night Drama</div>
+    <div class="theme-chip" onclick="selectTheme(this,'Monsoon Hero Shot')">🌧️ Monsoon</div>
+    <div class="theme-chip" onclick="selectTheme(this,'Aerial Bird Eye View')">🦅 Aerial View</div>
+  </div>
+  <button class="gen-btn" onclick="generate()">⚡ GENERATE CHATGPT PROMPT + CAPTION</button>
+  <div class="output-section" id="output-section" style="display:none;">
+    <div class="photo-warning">
+      📎 <span>Attach a real site photo to ChatGPT before sending this prompt. Results are 10x better with a reference image.</span>
+    </div>
+    <div class="spec-strip" id="spec-strip"></div>
+    <div class="output-card">
+      <div class="output-card-header">
+        <span class="output-title">🖼️ ChatGPT Image Prompt</span>
+        <button class="copy-btn" id="copy-prompt" onclick="copyText('prompt-text','copy-prompt')">Copy</button>
+      </div>
+      <div class="output-text" id="prompt-text"></div>
+    </div>
+    <div class="output-card">
+      <div class="output-card-header">
+        <span class="output-title">📲 WhatsApp Caption</span>
+        <button class="copy-btn" id="copy-caption" onclick="copyText('caption-text','copy-caption')">Copy</button>
+      </div>
+      <div class="output-text" id="caption-text"></div>
+    </div>
+    <div class="tip-box">
+      💡 <strong>If text appears wrong in image:</strong> Ask ChatGPT — "Regenerate, fix all text spelling, keep same layout and composition."
+    </div>
+  </div>
+</div>
+<footer>Rain Seal Tarpaulin Mfg Co · Chennai · Authorised SRF DURATENS Distributor</footer>
+<script>
+let grade = '900';
+let appName = 'Car Park Canopy';
+let appIcon = '🚗';
+let theme = 'Photorealistic Architecture';
+const gradeData = {
+  '750': { weight:'750 g/m²', thick:'0.55mm', tensile:'3500 N/50mm', warranty:'10-year', type:'Type I', color:'#2563EB', features:['UV Stabilised','TiO2 Reinforced','Low-Wick Yarn','PVDF Lacquered','Fire Retardant'], use:'walkways, small canopies, spans up to 6m' },
+  '900': { weight:'900 g/m²', thick:'0.70mm', tensile:'4200 N/50mm', warranty:'15-year', type:'Type II', color:'#7C3AED', features:['UV Stabilised','TiO2 Reinforced','Antimicrobial','Low-Wick Yarn','Both-Side PVDF Lacquered','Fire Retardant BS7837'], use:'car parks, schools, hospitals, hotels, commercial 6-12m' },
+  '1100': { weight:'1100 g/m²', thick:'0.90mm', tensile:'6000 N/50mm', warranty:'15-year', type:'Type III', color:'#DC2626', features:['Ultra Heavy Duty','TiO2 Reinforced','Antimicrobial','Coastal Grade','Both-Side PVDF Lacquered','Fire Retardant BS7837/DIN 4102 B1'], use:'stadiums, airports, industrial, coastal, 12m+ spans' }
+};
+function selectGrade(g) {
+  grade = g;
+  ['750','900','1100'].forEach(x => {
+    document.getElementById('btn-' + x).className = 'grade-btn' + (x === g ? ' active-' + x : '');
+  });
+}
+function selectApp(el, name, icon) {
+  document.querySelectorAll('.app-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  appName = name; appIcon = icon;
+}
+function selectTheme(el, t) {
+  document.querySelectorAll('.theme-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  theme = t;
+}
+function generate() {
+  const g = gradeData[grade];
+  const strip = document.getElementById('spec-strip');
+  strip.innerHTML = g.features.map(f => `<span class="spec-tag" style="background:${g.color}">${f}</span>`).join('');
+  const prompt = `TASK: Generate a professional marketing poster image (1080 x 1920 pixels, portrait) for a tensile fabric structure product.
+
+SUBJECT: ${appIcon} ${appName} using SRF DURATENS FR ${grade} ${g.type} architectural membrane, white colour.
+
+VISUAL STYLE: ${theme}. High-end architectural photography or render quality. Clean, aspirational, premium feel.
+
+STRUCTURE DESIGN (show in image):
+- Tensile fabric canopy with double-curvature sail shape or hyperbolic paraboloid form
+- Round MS pipe columns (no I-beams, no square sections)
+- Stainless steel SS 304 cable fittings and corner anchors
+- White SRF DURATENS membrane, slightly translucent in sunlight
+- Setting: realistic ${appName} environment, Chennai / South India context
+
+MANDATORY TEXT ON POSTER (render clearly, no spelling errors):
+- TOP: "SRF DURATENS" (large, bold, dark blue #003087)
+- HEADLINE: "Built to Last ${g.warranty}" (bold orange #FF6B00)
+- SUBLINE: "${appName} Tensile Canopy"
+- SPEC BOX bottom left: "FR ${grade} ${g.type} | ${g.weight} | ${g.thick} | ${g.tensile} | ${g.warranty} Warranty"
+- FEATURES: UV Stabilised · TiO2 Reinforced · PVDF Lacquered · Low-Wick · Fire Retardant
+- CERTIFICATIONS: BS 7837 · NFPA 701-2 · DIN 4102 B1
+- PROOF BADGE: "2.5+ Lakh Sq.Ft Executed · Since April 2025"
+- BOTTOM: "Rain Seal Tarpaulin Mfg Co, Chennai | +91 88708 76319"
+- CORNER: "Make in India · SIPCOT Gummidipoondi"
+
+COLOUR PALETTE: Deep navy blue #003087 for header, orange #FF6B00 for accents, white for membrane and text boxes, light grey background panels.
+
+MOOD: Premium, trustworthy, Indian commercial architecture.
+
+NEGATIVE PROMPT: No cartoon, no watermark, no blurry text, no I-beam columns, no square pipes, no flat fabric (must show curvature), no dark or gloomy mood.`;
+  const caption = `${appIcon} *${appName} — SRF DURATENS FR ${grade} ${g.type}*
+
+✅ ${g.weight} | ${g.thick} thick | ${g.warranty} Warranty
+✅ Tensile Strength: ${g.tensile}
+✅ Both-Side PVDF Lacquered
+✅ TiO2 Reinforced · UV Stabilised · Low-Wick
+✅ Fire Retardant: BS 7837 · NFPA 701-2 · DIN 4102 B1
+✅ ISO 9001/14001/45001 + REACH Compliant
+✅ Make in India — SIPCOT Gummidipoondi
+
+📍 Best for: ${g.use}
+
+🏆 2.5+ Lakh Sq.Ft Executed Since April 2025
+
+📞 Call / WhatsApp:
+https://wa.me/918870876319?text=Hi%20Jayavel%2C%20I%20am%20interested%20in%20SRF%20DURATENS%20FR%20${grade}%20for%20${encodeURIComponent(appName)}.%20Please%20share%20details.
+
+*Rain Seal Tarpaulin Mfg Co*
+Authorised SRF DURATENS Distributor · Chennai
+M: +91 88708 76319`;
+  document.getElementById('prompt-text').textContent = prompt;
+  document.getElementById('caption-text').textContent = caption;
+  document.getElementById('output-section').style.display = 'block';
+  setTimeout(() => { document.getElementById('output-section').scrollIntoView({behavior:'smooth', block:'start'}); }, 100);
+}
+function copyText(id, btnId) {
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+    const btn = document.getElementById(btnId);
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+</body>
+</html>
